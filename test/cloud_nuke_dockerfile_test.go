@@ -18,8 +18,17 @@ func TestDockerfile(t *testing.T) {
 
 	docker.Build(t, "../", buildOptions)
 
-	output := docker.Run(t, tag, &docker.RunOptions{})
+	runOptions := &docker.RunOptions{}
+	output := docker.Run(t, tag, runOptions)
 	assert.Equal(t, "cloud-nuke version v0.1.17", output)
+
+	runOptions.Command = []string{"whoami"}
+	output = docker.Run(t, tag, runOptions)
+	assert.Equal(t, "cloud-nuke", output)
+
+	runOptions.Command = []string{"pwd"}
+	output = docker.Run(t, tag, runOptions)
+	assert.Equal(t, "/cloud-nuke", output)
 }
 
 func TestDockerfileOverrideVersion(t *testing.T) {
