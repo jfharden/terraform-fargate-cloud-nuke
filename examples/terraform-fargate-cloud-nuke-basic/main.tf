@@ -5,5 +5,5 @@ terraform {
 module "cloud_nuke" {
   source = "../../"
 
-  name = "cloud-nuke-daily"
+  name = var.name
 }

@@ -19,4 +19,5 @@ variable "cloud_nuke_version" {
 variable "name" {
   type        = string
   description = "Name to apply to all the resources."
+  default     = "fargate-cloud-nuke"
 }

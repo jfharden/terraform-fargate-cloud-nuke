@@ -37,7 +37,9 @@ module "cloud-nuke" {
 
 ## Providers
 
-No provider.
+| Name | Version |
+|------|---------|
+| aws | n/a |
 
 ## Inputs
 
@@ -45,8 +47,8 @@ No provider.
 |------|-------------|------|---------|:--------:|
 | cloud\_nuke\_version | Version number of cloud nuke to install. | `string` | `"v0.1.17"` | no |
 | cloudwatch\_build\_schedule | Cloudwatch Schedule expression to specify when to run a build of the container. If blank then no build schdule will be created. | `string` | `""` | no |
-| cloudwatch\_run\_schedule | Cloudwatch Schedule expression to specify when to run the cloud nuke task. | `string` | n/a | yes |
-| name | Name to apply to all the resources. | `string` | n/a | yes |
+| cloudwatch\_run\_schedule | Cloudwatch Schedule expression to specify when to run the cloud nuke task. | `string` | `"cron(0 3 * * ? *)"` | no |
+| name | Name to apply to all the resources. | `string` | `"fargate-cloud-nuke"` | no |
 
 ## Outputs
 
