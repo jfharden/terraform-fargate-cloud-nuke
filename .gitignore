@@ -1,0 +1,23 @@
+# Terraform files
+.terraform
+terraform.tfstate
+terraform.tfvars
+*.tfstate*
+.terragrunt
+.terragrunt-cache
+
+vendor/
+
+# Folder used to store temporary test data by Terratest
+.test-data
+
+# OS X
+.DS_Store
+
+# Intermediate file for testing
+kubeconfig
+
+# Ignore vim temp and swap files
+*~
+*.swp
+*.swo
