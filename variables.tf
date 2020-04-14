@@ -21,3 +21,9 @@ variable "name" {
   description = "Name to apply to all the resources."
   default     = "fargate-cloud-nuke"
 }
+
+variable "tags" {
+  type        = map
+  description = "Tags to apply to all resources which can be tagged"
+  default     = {}
+}

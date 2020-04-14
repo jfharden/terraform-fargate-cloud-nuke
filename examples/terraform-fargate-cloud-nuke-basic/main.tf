@@ -6,4 +6,5 @@ module "cloud_nuke" {
   source = "../../"
 
   name = var.name
+  tags = var.tags
 }
