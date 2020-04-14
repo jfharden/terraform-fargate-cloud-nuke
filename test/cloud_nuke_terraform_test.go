@@ -81,7 +81,10 @@ func ValidateECR(t *testing.T, terraformOptions *terraform.Options, randomName s
 
 	repository := result.Repositories[0]
 
-	assert.True(t, awsSdk.BoolValue(repository.ImageScanningConfiguration.ScanOnPush), "Image scanning enabled on ECR repo")
+	assert.True(t,
+		awsSdk.BoolValue(repository.ImageScanningConfiguration.ScanOnPush),
+		"Image scanning enabled on ECR repo",
+	)
 
 	// Check the repo has the tags we set
 	tagRequest, tagResponse := ecrService.ListTagsForResourceRequest(
