@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -12,25 +13,13 @@ import (
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	test_structure "github.com/gruntwork-io/terratest/modules/test-structure"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFargateCloudNuke(t *testing.T) {
+func Setup(t *testing.T, workingDir string) *terraform.Options {
+	randomName := fmt.Sprintf("cloud-nuke-test-%s", strings.ToLower(random.UniqueId()))
 	awsRegion := "eu-west-1"
-
-	uniqueId := strings.ToLower(random.UniqueId())
-
-	awsSession, err := session.NewSession(
-		&awsSdk.Config{
-			Region: awsSdk.String(awsRegion),
-		},
-	)
-
-	if err != nil {
-		t.Errorf("Couldn't create AWS session %s", err)
-	}
-
-	randomName := fmt.Sprintf("cloud-nuke-test-%s", uniqueId)
 
 	terraformOptions := &terraform.Options{
 		TerraformDir: "../examples/terraform-fargate-cloud-nuke-basic/",
@@ -48,14 +37,47 @@ func TestFargateCloudNuke(t *testing.T) {
 		},
 	}
 
-	defer terraform.Destroy(t, terraformOptions)
+	test_structure.SaveString(t, workingDir, "randomName", randomName)
+	test_structure.SaveString(t, workingDir, "awsRegion", awsRegion)
+	test_structure.SaveTerraformOptions(t, workingDir, terraformOptions)
 
-	terraform.InitAndApply(t, terraformOptions)
-
-	ValidateECR(t, terraformOptions, randomName, awsSession)
+	return terraformOptions
 }
 
-func ValidateECR(t *testing.T, terraformOptions *terraform.Options, randomName string, awsSession *session.Session) {
+func TestFargateCloudNuke(t *testing.T) {
+	workingDir := filepath.Join(".terratest-working-dir", t.Name())
+
+	defer test_structure.RunTestStage(t, "destroy", func() {
+		options := test_structure.LoadTerraformOptions(t, workingDir)
+		terraform.Destroy(t, options)
+	})
+
+	test_structure.RunTestStage(t, "init_apply", func() {
+		options := Setup(t, workingDir)
+
+		terraform.InitAndApply(t, options)
+	})
+
+	test_structure.RunTestStage(t, "validate", func() {
+		options := test_structure.LoadTerraformOptions(t, workingDir)
+		ValidateECR(t, options, workingDir)
+	})
+}
+
+func ValidateECR(t *testing.T, terraformOptions *terraform.Options, workingDir string) {
+	randomName := test_structure.LoadString(t, workingDir, "randomName")
+	awsRegion := test_structure.LoadString(t, workingDir, "awsRegion")
+
+	awsSession, err := session.NewSession(
+		&awsSdk.Config{
+			Region: awsSdk.String(awsRegion),
+		},
+	)
+
+	if err != nil {
+		t.Errorf("Couldn't create AWS session %s", err)
+	}
+
 	// Check the ARN is as expected
 	accountId := aws.GetAccountId(t)
 	expectedEcrArn := fmt.Sprintf("arn:aws:ecr:eu-west-1:%s:repository/%s", accountId, randomName)
@@ -99,7 +121,7 @@ func ValidateECR(t *testing.T, terraformOptions *terraform.Options, randomName s
 	}
 
 	expectedTags := map[string]string{
-		"TerraformTest": randomName,
+		"TerraformTest": terraformOptions.Vars["name"].(string),
 		"Stage":         "test",
 	}
 
